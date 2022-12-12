@@ -9,3 +9,4 @@ def supers_list(request):
     supers = Supers.objects.all()
     serializer = SuperSerializer(supers, many=True)
     return Response(serializer.data)
+    # return response of serializer.data returns error message
