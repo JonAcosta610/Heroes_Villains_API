@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from .serializers import SuperSerializer
 from .models import Supers
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 @api_view(['GET', 'POST'])
@@ -20,11 +21,18 @@ def supers_list(request):
             return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT'])
 def supers_detail(request, pk):
-    try:
-        supers = Supers.objects.get(pk=pk)
-        serializer = SuperSerializer(super)
+    supers = get_object_or_404(Supers, pk=pk)
+    if request.method == 'GET':
+        try:
+            supers = Supers.objects.get(pk=pk)
+            serializer = SuperSerializer(super)
+            return Response(serializer.data)
+        except Supers.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    elif request.method == 'PUT':
+        serializer = SuperSerializer(supers, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
-    except Supers.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
